@@ -1,0 +1,117 @@
+
+-- 1. Remove recurring residency placeholders (now shown only in the fixed-residencies section of the page)
+DELETE FROM public.events WHERE venue_slug = 'toy-room';
+DELETE FROM public.events WHERE venue_slug = 'tropicana' AND dj ILIKE '%ludwig%';
+DELETE FROM public.events WHERE venue_slug = 'spilia' AND dj ILIKE 'Spilia Lunch Party';
+DELETE FROM public.events WHERE venue_slug = 'principote' AND dj ILIKE 'Principote Lunch Party';
+
+-- 2. Reset highlights so we can rebuild a mixed selection
+UPDATE public.events SET highlight = false WHERE highlight = true;
+
+-- 3. Insert Void summer 2026 lineup
+WITH v AS (SELECT id FROM public.venues WHERE slug='void' LIMIT 1)
+INSERT INTO public.events (date, dj, venue_id, venue_name, venue_slug, time, tag, highlight)
+SELECT d::date, dj, v.id, 'Void', 'void', '23:30', 'Night party', hl
+FROM v, (VALUES
+  ('2026-06-05','Maxi Meraki', false),
+  ('2026-06-06','Stephan Jolk', false),
+  ('2026-06-07','Solr', false),
+  ('2026-06-12','Sebastian Konrad x Culture of House', false),
+  ('2026-06-13','Stephan Jolk', false),
+  ('2026-06-14','Maga', false),
+  ('2026-06-19','Maxi Meraki', false),
+  ('2026-06-20','Stephan Jolk', false),
+  ('2026-06-21','TBA', false),
+  ('2026-06-22','Sona', false),
+  ('2026-06-23','Birds Of Mind', false),
+  ('2026-06-24','Arodes', false),
+  ('2026-06-25','Guy Gerber', true),
+  ('2026-06-26','Nandu & Yet More', false),
+  ('2026-06-27','Alec Monopoly', true),
+  ('2026-06-28','Baron B2B Dorian Craft', false),
+  ('2026-06-29','Sona', false),
+  ('2026-06-30','Birds Of Mind', false),
+  ('2026-07-01','Arodes', false),
+  ('2026-07-02','Guy Gerber', false),
+  ('2026-07-03','Afshin Momadi · Massuma', false),
+  ('2026-07-04','Alec Monopoly', false),
+  ('2026-07-05','Maxi Meraki', false),
+  ('2026-07-06','Sona', false),
+  ('2026-07-07','Birds Of Mind', false),
+  ('2026-07-08','Arodes', false),
+  ('2026-07-09','Guy Gerber', false),
+  ('2026-07-10','Maz', false),
+  ('2026-07-11','Alec Monopoly', false),
+  ('2026-07-12','Mahmut Orhan · Malive', true),
+  ('2026-07-13','Sona', false),
+  ('2026-07-14','Bees & Honey', false),
+  ('2026-07-15','Arodes', false),
+  ('2026-07-16','Guy Gerber', false),
+  ('2026-07-17','Maz · Bhaskar', false),
+  ('2026-07-18','Alec Monopoly', false),
+  ('2026-07-19','TBA', false),
+  ('2026-07-20','Sona', false),
+  ('2026-07-21','Birds Of Mind', false),
+  ('2026-07-22','Arodes', false),
+  ('2026-07-23','Guy Gerber', false),
+  ('2026-07-24','Mrak', false),
+  ('2026-07-25','Kaskade · Alec Monopoly', true),
+  ('2026-07-26','Mahmut Orhan · NXN', false),
+  ('2026-07-27','Sona', false),
+  ('2026-07-28','Birds Of Mind', false),
+  ('2026-07-29','Arodes', false),
+  ('2026-07-30','Guy Gerber', false),
+  ('2026-07-31','Void 10 Year Anniversary', true),
+  ('2026-08-01','Alec Monopoly', false),
+  ('2026-08-02','Mrak', false),
+  ('2026-08-03','Sona', false),
+  ('2026-08-04','Birds Of Mind', false),
+  ('2026-08-05','Arodes', false),
+  ('2026-08-06','Guy Gerber', false),
+  ('2026-08-07','Mahmut Orhan · Benja, Franc Fala', false),
+  ('2026-08-08','Alec Monopoly', false),
+  ('2026-08-09','Antdot · Tom & Collins', true),
+  ('2026-08-10','Sona', false),
+  ('2026-08-11','Birds Of Mind', false),
+  ('2026-08-12','Arodes', false),
+  ('2026-08-13','Guy Gerber', false),
+  ('2026-08-14','Maz', false),
+  ('2026-08-15','Alec Monopoly', false),
+  ('2026-08-16','Mahmut Orhan · Rami', false),
+  ('2026-08-17','Sona', false),
+  ('2026-08-18','Birds Of Mind', false),
+  ('2026-08-19','Arodes', false),
+  ('2026-08-20','Guy Gerber', false),
+  ('2026-08-21','Special Guest', false),
+  ('2026-08-22','Stephan Jolk', false),
+  ('2026-08-23','Nandu & Yet More', false),
+  ('2026-08-24','Sona', false),
+  ('2026-08-25','Birds Of Mind', false),
+  ('2026-08-26','Arodes', false),
+  ('2026-08-27','Guy Gerber', false),
+  ('2026-08-28','Max Menaged · Alan Dixon', false),
+  ('2026-08-29','Stephan Jolk', false),
+  ('2026-08-30','Nick Jojo', false),
+  ('2026-08-31','Sona', false),
+  ('2026-09-04','Solr · Krisdj', false),
+  ('2026-09-05','Alex Kosh', false),
+  ('2026-09-06','TBA', false),
+  ('2026-09-11','Friends & Family', false),
+  ('2026-09-12','Birds Of Mind', false),
+  ('2026-09-13','Camelphat — Closing', true)
+) AS t(d, dj, hl);
+
+-- 4. Spread highlights across venues for "must-see" carousel
+UPDATE public.events SET highlight = true WHERE (venue_slug, date, dj) IN (
+  ('lio','2026-05-29','Opening Night — SPECTACULARRR'),
+  ('scorpios','2026-06-11','Damian Lazarus, LICA'),
+  ('scorpios','2026-06-18','Bedouin, ATSOU'),
+  ('scorpios','2026-06-28','&ME, Ahmed Spins B2B Ankhoï'),
+  ('scorpios','2026-07-10','Lannka Invites Thievery Corporation (Live)'),
+  ('scorpios','2026-07-21','Peggy Gou, Lannka'),
+  ('scorpios','2026-07-30','Innervisions Mykonos — Âme, Dixon, Jimi Jules, Julya Karma, Trikk'),
+  ('scorpios','2026-08-06','Michael Bibi, Yamagucci'),
+  ('tropicana','2026-08-01','Gianluca Vacchi'),
+  ('tropicana','2026-07-03','Stafford Brothers'),
+  ('alemagou','2026-06-26','Maja — Opening Party')
+);
